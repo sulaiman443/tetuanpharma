@@ -91,6 +91,24 @@
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
+        #weather-link {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 15px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: 0.2s;
+        }
+        #weather-link:active { transform: scale(0.96); }
+
         .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
         .search-box-wrapper { flex: 1; }
         .search-box-wrapper input { 
@@ -144,10 +162,16 @@
     <div class="interactive-banner">
         <span style="background:white; color:var(--purple); padding:2px 10px; border-radius:20px; font-size:10px; font-weight:900;">نصيحة اليوم 🤍</span>
         <p id="health-tip" style="margin: 12px 0; font-size: 16px; font-weight: bold;">...</p>
+        
         <div style="display: flex; gap: 8px;">
             <a href="tel:15" style="background: var(--danger); color: white; padding: 8px; border-radius: 10px; text-decoration: none; font-size: 12px; flex: 1; text-align: center;">🚑 إسعاف</a>
             <a href="tel:19" style="background: var(--accent-blue); color: white; padding: 8px; border-radius: 10px; text-decoration: none; font-size: 12px; flex: 1; text-align: center;">👮 شرطة</a>
         </div>
+
+        <a href="https://weather.com/weather/today/l/35.58,-5.36" target="_blank" id="weather-link">
+            <span id="weather-icon">🌦️</span>
+            <span id="weather-text">جاري جلب الجو...</span>
+        </a>
     </div>
 
     <div class="search-row">
@@ -193,9 +217,25 @@
         else greet.innerText = "مساء الخير والراحة 🌙";
     }
 
+    async function fetchWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.5785&longitude=-5.3684&current_weather=true');
+            const data = await res.json();
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            let icon = "☀️";
+            if (code > 0 && code < 4) icon = "⛅"; else if (code >= 51) icon = "🌧️";
+            document.getElementById('weather-icon').innerText = icon;
+            document.getElementById('weather-text').innerText = `تطوان الآن: ${temp}°C`;
+        } catch (e) {
+            document.getElementById('weather-text').innerText = "تطوان: عرض الطقس";
+        }
+    }
+
     async function init() {
         updateHeaderInfo();
         updateAdvice();
+        fetchWeather();
         setInterval(updateAdvice, 10000);
         try {
             const res = await fetch(SHEET_URL);
@@ -212,7 +252,7 @@
             });
             render(allData);
         } catch(e) { 
-            document.getElementById('pList').innerHTML = "خطأ في المزامنة. تأكد من إعدادات المشاركة."; 
+            document.getElementById('pList').innerHTML = "خطأ في المزامنة."; 
         }
     }
 
@@ -222,11 +262,9 @@
             list.innerHTML = "<p style='text-align:center; opacity:0.6;'>لا توجد نتائج...</p>";
             return;
         }
-
         list.innerHTML = data.map((p, index) => {
             const searchStr = p.name + " صيدلية " + p.area + " تطوان";
             const mapUrl = "https://www.google.com/maps/search/" + encodeURIComponent(searchStr);
-
             return `
                 <div class="ph-card ${p.status}" style="animation-delay: ${index * 0.1}s">
                     <div class="ph-info">
