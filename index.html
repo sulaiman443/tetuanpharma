@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>تطوان فارما - TETUAN PHARMA</title>
+    <title> تطوان فارماسيا- TETUAN PHARMA</title>
 
     <link rel="apple-touch-icon" href="https://i.postimg.cc/4NkYW4Z0/IMG-2082.jpg?v=2">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/4NkYW4Z0/IMG-2082.jpg?v=2">
@@ -61,7 +61,7 @@
             font-size: 26px; font-weight: 900; 
             background: linear-gradient(45deg, #ffffff, var(--primary)); 
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: block; 
+            display: block; cursor: pointer;
         }
         
         .side-logo-img {
@@ -92,22 +92,12 @@
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         #weather-link {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(0,0,0,0.25);
-            border-radius: 15px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 14px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            transition: 0.2s;
+            margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.25);
+            border-radius: 15px; text-decoration: none; display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            color: #fbbf24; font-weight: bold; font-size: 14px;
+            border: 1px solid rgba(251, 191, 36, 0.2); transition: 0.2s;
         }
-        #weather-link:active { transform: scale(0.96); }
 
         .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
         .search-box-wrapper { flex: 1; }
@@ -117,17 +107,11 @@
             color: white; outline: none; font-size: 16px; box-sizing: border-box;
         }
 
-        .gmail-3d-btn {
-            width: 50px; height: 50px; background: white; border-radius: 15px;
-            display: flex; justify-content: center; align-items: center;
-            text-decoration: none; font-size: 22px; flex-shrink: 0;
-        }
-
         .ph-card { 
             background: var(--glass); backdrop-filter: blur(20px); border-radius: 22px; 
             padding: 18px; border: 1px solid rgba(255,255,255,0.05); 
             display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 15px; transition: 0.3s; animation: slideUp 0.5s ease forwards;
+            margin-bottom: 15px; animation: slideUp 0.5s ease forwards;
         }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -135,12 +119,24 @@
         .ph-card.night { border-right: 6px solid var(--night); }
 
         .filter-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; font-weight: bold; }
+        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; }
         .filter-btn.active { background: var(--primary); color: #064e3b; }
 
         .action-icon { background: white; color: black; width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 18px; }
 
-        .share-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #064e3b; border: none; padding: 16px; border-radius: 35px; font-weight: bold; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Admin Overlay Styles */
+        #admin-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .admin-card {
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px;
+            margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px; }
+        .admin-btns button { border: none; padding: 8px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; }
+
+        .share-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #064e3b; border: none; padding: 16px; border-radius: 35px; font-weight: bold; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -152,8 +148,8 @@
 <div class="app-container">
     <header>
         <div class="brand-info">
-            <span class="brand-logo-text">TETUAN PHARMA</span>
-            <div class="official-partnership">✨ نقابة صيادلة تطوان</div>
+            <span class="brand-logo-text" onclick="handleAdminTap()">TETUAN PHARMA</span>
+            <div class="official-partnership">✨ بشراكة مع نقابة صيادلة تطوان</div>
             <div id="greeting" style="font-size: 12px; margin-top: 5px; opacity: 0.8;">...</div>
         </div>
         <img src="https://i.postimg.cc/4NkYW4Z0/IMG-2082.jpg" class="side-logo-img" alt="Logo">
@@ -192,9 +188,20 @@
     <button class="share-btn" onclick="shareApp()">صيفط التطبيق للحباب 📤</button>
 </div>
 
+<div id="admin-overlay">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:var(--primary); margin:0;">لوحة التحكم ⚙️</h2>
+        <button onclick="closeAdmin()" style="background:var(--danger); border:none; color:white; padding:10px 20px; border-radius:10px; font-weight:bold;">خروج</button>
+    </div>
+    <div id="admin-status-msg" style="text-align:center; color:var(--night); margin-bottom:15px; font-weight:bold;"></div>
+    <div id="adminList"></div>
+</div>
+
 <script>
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1-qzlNIF6DXq_Em17_01ndliRUhB9gg5rAUM3hQIwqqc/export?format=csv'; 
+    const APPS_SCRIPT_URL = 'ضع_هنا_رابط_APP_SCRIPT_الخاص_بالمزامنة'; // اختياري للمزامنة التلقائية
     let allData = [];
+    let adminTapCount = 0;
 
     const medicalTips = [
         "رخي على راسك وشبر النفس طويل، الأكسجين كيهدن الأعصاب يا الحبيب. 🧠",
@@ -204,6 +211,49 @@
         "نقص من السكر والحلويات راه هما الساس د العيا والنفخة. 🍎"
     ];
 
+    // --- Admin Logic ---
+    function handleAdminTap() {
+        adminTapCount++;
+        if (adminTapCount >= 3) {
+            const pass = prompt("أدخل رمز الدخول للإدارة:");
+            if (pass === "123") { // الرمز هو 123
+                document.getElementById('admin-overlay').style.display = 'block';
+                renderAdmin();
+            }
+            adminTapCount = 0;
+        }
+        setTimeout(() => adminTapCount = 0, 2000);
+    }
+
+    function closeAdmin() {
+        document.getElementById('admin-overlay').style.display = 'none';
+    }
+
+    function renderAdmin() {
+        const container = document.getElementById('adminList');
+        container.innerHTML = allData.map((p, index) => `
+            <div class="admin-card">
+                <div style="font-weight:bold;">${p.name}</div>
+                <div class="admin-btns">
+                    <button onclick="updateStatus(${index}, 'open')" style="background:${p.status==='open'? 'var(--primary)':'#444'}; color:${p.status==='open'?'#064e3b':'#ccc'}">☀️ مفتوح</button>
+                    <button onclick="updateStatus(${index}, 'night')" style="background:${p.status==='night'? 'var(--night)':'#444'}; color:${p.status==='night'?'#064e3b':'#ccc'}">🌙 حراسة</button>
+                    <button onclick="updateStatus(${index}, 'closed')" style="background:${p.status==='closed'? 'var(--danger)':'#444'}; color:white">🔒 مغلق</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateStatus(index, newStatus) {
+        allData[index].status = newStatus;
+        document.getElementById('admin-status-msg').innerText = "تم التحديث محلياً بنجاح ✅";
+        renderAdmin();
+        render(allData);
+        
+        // هنا يمكنك إضافة كود Fetch لإرسال التغيير لـ Google Sheets عبر Apps Script
+        setTimeout(() => document.getElementById('admin-status-msg').innerText = "", 2000);
+    }
+
+    // --- Core App Logic ---
     function updateAdvice() {
         document.getElementById('health-tip').innerText = medicalTips[Math.floor(Math.random() * medicalTips.length)];
     }
@@ -266,7 +316,7 @@
             const searchStr = p.name + " صيدلية " + p.area + " تطوان";
             const mapUrl = "https://www.google.com/maps/search/" + encodeURIComponent(searchStr);
             return `
-                <div class="ph-card ${p.status}" style="animation-delay: ${index * 0.1}s">
+                <div class="ph-card ${p.status}" style="animation-delay: ${index * 0.05}s">
                     <div class="ph-info">
                         <h3 style="margin:0; font-size:17px; color:white;">${p.name}</h3>
                         <p style="margin:4px 0; font-size:12px; opacity:0.7;">📍 ${p.area}</p>
