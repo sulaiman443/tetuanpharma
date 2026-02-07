@@ -32,7 +32,6 @@
             font-family: var(--font-main); color: white; overflow-x: hidden;
         }
 
-        /* الخلفية المتحركة */
         .fog-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1; overflow: hidden; pointer-events: none;
@@ -125,7 +124,6 @@
 
         .action-icon { background: white; color: black; width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 18px; }
 
-        /* استايل لوحة التحكم Admin */
         #admin-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0f172a; z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto;
@@ -137,12 +135,19 @@
             border: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; border-radius: 12px; 
             font-weight: bold; font-size: 11px; cursor: pointer; background: rgba(0,0,0,0.3); color: #fff; transition: 0.3s;
         }
-        /* ألوان الأزرار النشطة في لوحة التحكم */
-        .admin-btns button.active-open { background: var(--primary) !important; color: #064e3b !important; box-shadow: 0 0 10px rgba(74,222,128,0.3); }
-        .admin-btns button.active-night { background: var(--night) !important; color: #064e3b !important; box-shadow: 0 0 10px rgba(251,191,36,0.3); }
+        .admin-btns button.active-open { background: var(--primary) !important; color: #064e3b !important; }
+        .admin-btns button.active-night { background: var(--night) !important; color: #064e3b !important; }
         .admin-btns button.active-closed { background: var(--danger) !important; color: white !important; }
 
-        .share-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #064e3b; border: none; padding: 16px; border-radius: 35px; font-weight: bold; z-index: 1000; width: 85%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer; }
+        .share-btn { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: var(--primary); color: #064e3b; border: none; 
+            padding: 16px; border-radius: 35px; font-weight: bold; 
+            z-index: 1000; width: 85%; max-width: 320px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .share-btn:active { transform: translateX(-50%) scale(0.95); }
     </style>
 </head>
 <body>
@@ -191,7 +196,7 @@
 
     <div id="pList">مزامنة البيانات الحية...</div>
 
-    <button class="share-btn" onclick="shareApp()"شارك الدواء📤</button>
+    <button class="share-btn" onclick="shareApp()">شارك التطبيق 📤</button>
 </div>
 
 <div id="admin-overlay">
@@ -221,7 +226,6 @@
         "نقص من السكر والحلويات راه هما الساس د العيا والنفخة. 🍎"
     ];
 
-    // --- منطق الإدارة Admin ---
     function handleAdminTap() {
         adminTapCount++;
         if (adminTapCount >= 3) {
@@ -245,7 +249,6 @@
         const filtered = allData.filter(p => p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term));
         
         container.innerHTML = filtered.map((p, index) => {
-            // العثور على الاندكس الحقيقي في المصفوفة الأصلية
             const realIndex = allData.findIndex(item => item.name === p.name);
             return `
                 <div class="admin-card">
@@ -269,7 +272,6 @@
         setTimeout(() => document.getElementById('admin-status-msg').innerText = "", 2000);
     }
 
-    // --- منطق التطبيق الأساسي ---
     function updateAdvice() {
         document.getElementById('health-tip').innerText = medicalTips[Math.floor(Math.random() * medicalTips.length)];
     }
@@ -362,12 +364,24 @@
         render(filtered);
     }
 
+    // وظيفة المشاركة المحسنة
     function shareApp() {
-        if (navigator.share) navigator.share({ title: 'تطوان فارما', text: 'صيدليات تطوان في جيبك', url: window.location.href });
+        const shareData = {
+            title: 'تطوان فارماسيا',
+            text: 'دليلك لصيدليات الحراسة في تطوان 💊',
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            navigator.share(shareData);
+        } else {
+            // حل بديل للأجهزة التي لا تدعم المشاركة (نسخ الرابط)
+            navigator.clipboard.writeText(window.location.href);
+            alert("تم نسخ رابط التطبيق! يمكنك مشاركته الآن.");
+        }
     }
 
     init();
 </script>
 </body>
 </html>
-
