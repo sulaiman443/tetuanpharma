@@ -17,8 +17,9 @@
 
     <style>
         :root { 
-            --primary: #4ade80; 
-            --night: #fbbf24; 
+            --primary: #4ade80; /* دائم */
+            --night: #fbbf24;   /* أسبوعي */
+            --regular: #94a3b8;  /* عادي */
             --danger: #ff4d4d; 
             --glass: rgba(255, 255, 255, 0.1); 
             --accent-blue: #3498db;
@@ -63,6 +64,19 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             display: block; cursor: pointer;
         }
+
+        /* تنسيق الساعة */
+        #live-clock {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--night);
+            margin-top: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
         
         .side-logo-img {
             width: 75px; height: 75px; border-radius: 50%;
@@ -91,14 +105,6 @@
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        #weather-link {
-            margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.25);
-            border-radius: 15px; text-decoration: none; display: flex;
-            align-items: center; justify-content: center; gap: 10px;
-            color: #fbbf24; font-weight: bold; font-size: 14px;
-            border: 1px solid rgba(251, 191, 36, 0.2); transition: 0.2s;
-        }
-
         .search-row { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
         .search-box-wrapper { flex: 1; }
         .search-box-wrapper input { 
@@ -113,14 +119,13 @@
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 15px; animation: slideUp 0.5s ease forwards;
         }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .ph-card.open { border-right: 6px solid var(--primary); }
-        .ph-card.night { border-right: 6px solid var(--night); }
+        .ph-card.permanent { border-right: 6px solid var(--primary); background: rgba(74, 222, 128, 0.05); }
+        .ph-card.weekly { border-right: 6px solid var(--night); background: rgba(251, 191, 36, 0.05); }
+        .ph-card.regular { border-right: 6px solid var(--regular); opacity: 0.8; }
 
         .filter-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .filter-btn.active { background: var(--primary); color: #064e3b; }
+        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .filter-btn.active { background: white; color: black; }
 
         .action-icon { background: white; color: black; width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 18px; }
 
@@ -133,11 +138,11 @@
         .admin-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
         .admin-btns button { 
             border: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; border-radius: 12px; 
-            font-weight: bold; font-size: 11px; cursor: pointer; background: rgba(0,0,0,0.3); color: #fff; transition: 0.3s;
+            font-weight: bold; font-size: 10px; cursor: pointer; background: rgba(0,0,0,0.3); color: #fff;
         }
-        .admin-btns button.active-open { background: var(--primary) !important; color: #064e3b !important; }
-        .admin-btns button.active-night { background: var(--night) !important; color: #064e3b !important; }
-        .admin-btns button.active-closed { background: var(--danger) !important; color: white !important; }
+        .admin-btns button.active-p { background: var(--primary) !important; color: #000 !important; }
+        .admin-btns button.active-w { background: var(--night) !important; color: #000 !important; }
+        .admin-btns button.active-r { background: var(--regular) !important; color: #000 !important; }
 
         .share-btn { 
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
@@ -145,9 +150,7 @@
             padding: 16px; border-radius: 35px; font-weight: bold; 
             z-index: 1000; width: 85%; max-width: 320px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer;
-            transition: transform 0.2s ease;
         }
-        .share-btn:active { transform: translateX(-50%) scale(0.95); }
     </style>
 </head>
 <body>
@@ -161,7 +164,8 @@
         <div class="brand-info">
             <span class="brand-logo-text" onclick="handleAdminTap()">TETUAN PHARMA</span>
             <div class="official-partnership">✨بشراكة مع نقابة صيادلة تطوان</div>
-            <div id="greeting" style="font-size: 12px; margin-top: 5px; opacity: 0.8;">...</div>
+            <div id="greeting" style="font-size: 13px; margin-top: 5px; opacity: 0.9; font-weight: 600;">...</div>
+            <div id="live-clock"></div>
         </div>
         <img src="https://h.top4top.io/p_3689ib35i1.jpeg" class="side-logo-img" alt="Logo">
     </header>
@@ -174,24 +178,19 @@
             <a href="tel:15" style="background: var(--danger); color: white; padding: 8px; border-radius: 10px; text-decoration: none; font-size: 12px; flex: 1; text-align: center;">🚑 إسعاف</a>
             <a href="tel:19" style="background: var(--accent-blue); color: white; padding: 8px; border-radius: 10px; text-decoration: none; font-size: 12px; flex: 1; text-align: center;">👮 شرطة</a>
         </div>
-
-        <a href="https://weather.com/weather/today/l/35.58,-5.36" target="_blank" id="weather-link">
-            <span id="weather-icon">🌦️</span>
-            <span id="weather-text">جاري جلب الجو...</span>
-        </a>
     </div>
 
     <div class="search-row">
         <div class="search-box-wrapper">
             <input type="text" id="searchInput" placeholder="فتش على صيدلية أو حومة..." onkeyup="handleSearch()">
         </div>
-        <a href="mailto:sulaimangonzalo@gmail.com" class="gmail-3d-btn" style="text-decoration:none; display:flex; justify-content:center; align-items:center; background:white; width:50px; height:50px; border-radius:15px; font-size:22px;">✉️</a>
+        <a href="mailto:sulaimangonzalo@gmail.com" style="text-decoration:none; display:flex; justify-content:center; align-items:center; background:white; width:50px; height:50px; border-radius:15px; font-size:22px;">✉️</a>
     </div>
 
     <div class="filter-buttons">
         <button class="filter-btn active" id="allBtn" onclick="setFilter('all')">الكل</button>
-        <button class="filter-btn" id="openBtn" onclick="setFilter('open')">مفتوحة</button>
-        <button class="filter-btn" id="nightBtn" onclick="setFilter('night')">حراسة</button>
+        <button class="filter-btn" id="permBtn" onclick="setFilter('permanent')">دائمة 24/24</button>
+        <button class="filter-btn" id="weekBtn" onclick="setFilter('weekly')">حراسة الأسبوع</button>
     </div>
 
     <div id="pList">مزامنة البيانات الحية...</div>
@@ -204,12 +203,6 @@
         <h2 style="margin:0; color:var(--primary);">لوحة التحكم ⚙️</h2>
         <button onclick="closeAdmin()" style="background:var(--danger); border:none; color:white; padding:10px 20px; border-radius:12px; font-weight:bold;">خروج</button>
     </div>
-    
-    <div class="search-box-wrapper" style="margin-bottom: 20px;">
-        <input type="text" id="adminSearchInput" placeholder="ابحث لتعديل حالة صيدلية..." onkeyup="renderAdmin()" style="width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white;">
-    </div>
-
-    <div id="admin-status-msg" style="text-align:center; color:var(--night); margin-bottom:15px; font-weight:bold; min-height:20px;"></div>
     <div id="adminList"></div>
 </div>
 
@@ -226,6 +219,25 @@
         "نقص من السكر والحلويات راه هما الساس د العيا والنفخة. 🍎"
     ];
 
+    // دالة الساعة والتاريخ الحية
+    function updateDateTime() {
+        const now = new Date();
+        
+        // الترحيب حسب الوقت
+        const hour = now.getHours();
+        const greetElement = document.getElementById('greeting');
+        if (hour >= 5 && hour < 12) greetElement.innerText = "صباح الخير والرباح ☀️";
+        else if (hour >= 12 && hour < 18) greetElement.innerText = "نهارك مبروك يا الحبيب 🌤️";
+        else greetElement.innerText = "مساء الخير والراحة 🌙";
+
+        // التاريخ والوقت بتنسيق عربي مغربي
+        const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+        const dateStr = now.toLocaleDateString('ar-MA', dateOptions);
+        const timeStr = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        document.getElementById('live-clock').innerText = `${dateStr} | ${timeStr}`;
+    }
+
     function handleAdminTap() {
         adminTapCount++;
         if (adminTapCount >= 3) {
@@ -239,72 +251,38 @@
         setTimeout(() => adminTapCount = 0, 2000);
     }
 
-    function closeAdmin() {
-        document.getElementById('admin-overlay').style.display = 'none';
-    }
+    function closeAdmin() { document.getElementById('admin-overlay').style.display = 'none'; }
 
     function renderAdmin() {
-        const term = document.getElementById('adminSearchInput').value.toLowerCase();
         const container = document.getElementById('adminList');
-        const filtered = allData.filter(p => p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term));
-        
-        container.innerHTML = filtered.map((p, index) => {
-            const realIndex = allData.findIndex(item => item.name === p.name);
-            return `
-                <div class="admin-card">
-                    <div style="font-weight:bold; color:var(--primary); font-size:16px;">${p.name}</div>
-                    <div style="font-size:12px; opacity:0.7; margin-top:4px;">📍 ${p.area}</div>
-                    <div class="admin-btns">
-                        <button onclick="updateStatus(${realIndex}, 'open')" class="${p.status==='open'?'active-open':''}">☀️ مفتوح</button>
-                        <button onclick="updateStatus(${realIndex}, 'night')" class="${p.status==='night'?'active-night':''}">🌙 حراسة</button>
-                        <button onclick="updateStatus(${realIndex}, 'closed')" class="${p.status==='closed'?'active-closed':''}">🔒 مغلق</button>
-                    </div>
+        container.innerHTML = allData.map((p, index) => `
+            <div class="admin-card">
+                <div style="font-weight:bold; color:var(--primary);">${p.name}</div>
+                <div class="admin-btns">
+                    <button onclick="updateStatus(${index}, 'permanent')" class="${p.status==='permanent'?'active-p':''}">🟢 دائمة</button>
+                    <button onclick="updateStatus(${index}, 'weekly')" class="${p.status==='weekly'?'active-w':''}">🟡 أسبوعية</button>
+                    <button onclick="updateStatus(${index}, 'regular')" class="${p.status==='regular'?'active-r':''}">⚪ عادية</button>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `).join('');
     }
 
     function updateStatus(index, newStatus) {
         allData[index].status = newStatus;
-        document.getElementById('admin-status-msg').innerText = "تم التحديث محلياً ✅";
         renderAdmin();
         render(allData);
-        setTimeout(() => document.getElementById('admin-status-msg').innerText = "", 2000);
     }
 
     function updateAdvice() {
         document.getElementById('health-tip').innerText = medicalTips[Math.floor(Math.random() * medicalTips.length)];
     }
 
-    function updateHeaderInfo() {
-        const now = new Date();
-        const hour = now.getHours();
-        const greet = document.getElementById('greeting');
-        if (hour >= 5 && hour < 12) greet.innerText = "صباح الخير والرباح ☀️";
-        else if (hour >= 12 && hour < 18) greet.innerText = "نهارك مبروك يا الحبيب 🌤️";
-        else greet.innerText = "مساء الخير والراحة 🌙";
-    }
-
-    async function fetchWeather() {
-        try {
-            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.5785&longitude=-5.3684&current_weather=true');
-            const data = await res.json();
-            const temp = Math.round(data.current_weather.temperature);
-            const code = data.current_weather.weathercode;
-            let icon = "☀️";
-            if (code > 0 && code < 4) icon = "⛅"; else if (code >= 51) icon = "🌧️";
-            document.getElementById('weather-icon').innerText = icon;
-            document.getElementById('weather-text').innerText = `تطوان الآن: ${temp}°C`;
-        } catch (e) {
-            document.getElementById('weather-text').innerText = "تطوان: عرض الطقس";
-        }
-    }
-
     async function init() {
-        updateHeaderInfo();
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // تحديث كل ثانية
         updateAdvice();
-        fetchWeather();
         setInterval(updateAdvice, 10000);
+
         try {
             const res = await fetch(SHEET_URL);
             const text = await res.text();
@@ -319,9 +297,7 @@
                 };
             });
             render(allData);
-        } catch(e) { 
-            document.getElementById('pList').innerHTML = "خطأ في المزامنة."; 
-        }
+        } catch(e) { document.getElementById('pList').innerHTML = "خطأ في المزامنة."; }
     }
 
     function render(data) {
@@ -331,16 +307,19 @@
             return;
         }
         list.innerHTML = data.map((p, index) => {
-            const searchStr = p.name + " " + p.area + " تطوان";
-            const mapUrl = "https://www.google.com/maps/search/" + encodeURIComponent(searchStr);
+            let sTxt, sCol;
+            if(p.status === 'permanent') { sTxt = "🟢 حراسة دائمة 24/24"; sCol = 'var(--primary)'; }
+            else if(p.status === 'weekly') { sTxt = "🌙 حراسة الأسبوع (ليلاً + الأحد)"; sCol = 'var(--night)'; }
+            else { sTxt = "🕒 دوام عادي (9:00 - 20:00)"; sCol = 'var(--regular)'; }
+
+            const mapUrl = "https://www.google.com/maps/search/" + encodeURIComponent(p.name + " " + p.area + " تطوان");
+            
             return `
                 <div class="ph-card ${p.status}" style="animation-delay: ${index * 0.05}s">
                     <div class="ph-info">
                         <h3 style="margin:0; font-size:17px; color:white;">${p.name}</h3>
                         <p style="margin:4px 0; font-size:12px; opacity:0.7;">📍 ${p.area}</p>
-                        <span style="font-size:11px; font-weight:bold; color:${p.status === 'night' ? 'var(--night)' : (p.status === 'open' ? 'var(--primary)' : '#888')}">
-                            ${p.status === 'night' ? '🌙 حراسة ليلية' : (p.status === 'open' ? '☀️ مفتوحة الآن' : '🔒 مغلقة')}
-                        </span>
+                        <span style="font-size:11px; font-weight:bold; color:${sCol}">${sTxt}</span>
                     </div>
                     <div class="ph-actions" style="display:flex; gap:8px;">
                         <a href="${mapUrl}" target="_blank" class="action-icon" style="background:var(--accent-blue); color:white;">📍</a>
@@ -353,31 +332,24 @@
 
     function handleSearch() {
         const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allData.filter(p => (p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term)));
-        render(filtered);
+        render(allData.filter(p => p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term)));
     }
 
     function setFilter(type) {
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(type + 'Btn').classList.add('active');
-        const filtered = type === 'all' ? allData : allData.filter(p => p.status === type);
-        render(filtered);
+        if(type === 'all') document.getElementById('allBtn').classList.add('active');
+        else if(type === 'permanent') document.getElementById('permBtn').classList.add('active');
+        else document.getElementById('weekBtn').classList.add('active');
+        
+        render(type === 'all' ? allData : allData.filter(p => p.status === type));
     }
 
-    // وظيفة المشاركة المحسنة
     function shareApp() {
-        const shareData = {
-            title: 'تطوان فارماسيا',
-            text: 'دليلك لصيدليات الحراسة في تطوان 💊',
-            url: window.location.href
-        };
-
         if (navigator.share) {
-            navigator.share(shareData);
+            navigator.share({ title: 'تطوان فارماسيا', text: 'صيدليات الحراسة بتطوان 💊', url: window.location.href });
         } else {
-            // حل بديل للأجهزة التي لا تدعم المشاركة (نسخ الرابط)
             navigator.clipboard.writeText(window.location.href);
-            alert("تم نسخ رابط التطبيق! يمكنك مشاركته الآن.");
+            alert("تم نسخ رابط التطبيق!");
         }
     }
 
