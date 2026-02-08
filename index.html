@@ -65,7 +65,6 @@
             display: block; cursor: pointer;
         }
 
-        /* تنسيق الساعة */
         #live-clock {
             font-size: 13px;
             font-weight: bold;
@@ -119,13 +118,15 @@
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 15px; animation: slideUp 0.5s ease forwards;
         }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .ph-card.permanent { border-right: 6px solid var(--primary); background: rgba(74, 222, 128, 0.05); }
         .ph-card.weekly { border-right: 6px solid var(--night); background: rgba(251, 191, 36, 0.05); }
         .ph-card.regular { border-right: 6px solid var(--regular); opacity: 0.8; }
 
-        .filter-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .filter-btn.active { background: white; color: black; }
+        .filter-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .filter-btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .filter-btn.active { background: white; color: black; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
 
         .action-icon { background: white; color: black; width: 42px; height: 42px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 18px; }
 
@@ -189,7 +190,6 @@
 
     <div class="filter-buttons">
         <button class="filter-btn active" id="allBtn" onclick="setFilter('all')">الكل</button>
-        <button class="filter-btn" id="permBtn" onclick="setFilter('permanent')">دائمة 24/24</button>
         <button class="filter-btn" id="weekBtn" onclick="setFilter('weekly')">حراسة الأسبوع</button>
     </div>
 
@@ -210,6 +210,7 @@
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1-qzlNIF6DXq_Em17_01ndliRUhB9gg5rAUM3hQIwqqc/export?format=csv'; 
     let allData = [];
     let adminTapCount = 0;
+    let currentFilter = 'all';
 
     const medicalTips = [
         "رخي على راسك وشبر النفس طويل، الأكسجين كيهدن الأعصاب يا الحبيب. 🧠",
@@ -219,22 +220,17 @@
         "نقص من السكر والحلويات راه هما الساس د العيا والنفخة. 🍎"
     ];
 
-    // دالة الساعة والتاريخ الحية
     function updateDateTime() {
         const now = new Date();
-        
-        // الترحيب حسب الوقت
         const hour = now.getHours();
         const greetElement = document.getElementById('greeting');
         if (hour >= 5 && hour < 12) greetElement.innerText = "صباح الخير والرباح ☀️";
         else if (hour >= 12 && hour < 18) greetElement.innerText = "نهارك مبروك يا الحبيب 🌤️";
         else greetElement.innerText = "مساء الخير والراحة 🌙";
 
-        // التاريخ والوقت بتنسيق عربي مغربي
         const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
         const dateStr = now.toLocaleDateString('ar-MA', dateOptions);
         const timeStr = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        
         document.getElementById('live-clock').innerText = `${dateStr} | ${timeStr}`;
     }
 
@@ -270,7 +266,7 @@
     function updateStatus(index, newStatus) {
         allData[index].status = newStatus;
         renderAdmin();
-        render(allData);
+        applyLogic();
     }
 
     function updateAdvice() {
@@ -279,7 +275,7 @@
 
     async function init() {
         updateDateTime();
-        setInterval(updateDateTime, 1000); // تحديث كل ثانية
+        setInterval(updateDateTime, 1000);
         updateAdvice();
         setInterval(updateAdvice, 10000);
 
@@ -296,8 +292,34 @@
                     status: (cols[3] || "").replace(/"/g,'').trim().toLowerCase() 
                 };
             });
-            render(allData);
+            applyLogic();
         } catch(e) { document.getElementById('pList').innerHTML = "خطأ في المزامنة."; }
+    }
+
+    function setFilter(type) {
+        currentFilter = type;
+        document.getElementById('allBtn').classList.toggle('active', type === 'all');
+        document.getElementById('weekBtn').classList.toggle('active', type === 'weekly');
+        applyLogic();
+    }
+
+    function handleSearch() { applyLogic(); }
+
+    function applyLogic() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        let filtered = allData.filter(p => p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term));
+        
+        if (currentFilter === 'weekly') {
+            filtered = filtered.filter(p => p.status === 'weekly' || p.status === 'permanent');
+        }
+        
+        // الترتيب: دائمة ثم أسبوعية ثم عادية
+        filtered.sort((a, b) => {
+            const order = { 'permanent': 1, 'weekly': 2, 'regular': 3 };
+            return order[a.status] - order[b.status];
+        });
+
+        render(filtered);
     }
 
     function render(data) {
@@ -312,7 +334,7 @@
             else if(p.status === 'weekly') { sTxt = "🌙 حراسة الأسبوع (ليلاً + الأحد)"; sCol = 'var(--night)'; }
             else { sTxt = "🕒 دوام عادي (9:00 - 20:00)"; sCol = 'var(--regular)'; }
 
-            const mapUrl = "https://www.google.com/maps/search/" + encodeURIComponent(p.name + " " + p.area + " تطوان");
+            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.name + " " + p.area + " تطوان");
             
             return `
                 <div class="ph-card ${p.status}" style="animation-delay: ${index * 0.05}s">
@@ -328,20 +350,6 @@
                 </div>
             `;
         }).join('');
-    }
-
-    function handleSearch() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        render(allData.filter(p => p.name.toLowerCase().includes(term) || p.area.toLowerCase().includes(term)));
-    }
-
-    function setFilter(type) {
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        if(type === 'all') document.getElementById('allBtn').classList.add('active');
-        else if(type === 'permanent') document.getElementById('permBtn').classList.add('active');
-        else document.getElementById('weekBtn').classList.add('active');
-        
-        render(type === 'all' ? allData : allData.filter(p => p.status === type));
     }
 
     function shareApp() {
